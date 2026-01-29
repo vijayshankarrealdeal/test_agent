@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
@@ -48,7 +47,7 @@ class ChatProvider with ChangeNotifier {
         Uri.parse(_chatEndpoint),
         headers: {
           'Content-Type': 'application/json',
-          'accept': 'application/json'
+          'accept': 'application/json',
         },
         body: jsonEncode({
           'query': text,
@@ -59,10 +58,18 @@ class ChatProvider with ChangeNotifier {
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
-        final botMessage = ChatMessage(text: responseData['response'], isUser: false);
+        final botMessage = ChatMessage(
+          text: responseData['response'],
+          isUser: false,
+        );
         _messages.add(botMessage);
       } else {
-        _messages.add(ChatMessage(text: 'Error: Could not connect to the server.', isUser: false));
+        _messages.add(
+          ChatMessage(
+            text: 'Error: Could not connect to the server.',
+            isUser: false,
+          ),
+        );
       }
     } catch (e) {
       _messages.add(ChatMessage(text: 'Error: $e', isUser: false));
@@ -104,27 +111,20 @@ class ChatScreen extends StatelessWidget {
                   final message = chatProvider.messages[index];
                   return ListTile(
                     title: Align(
-                      alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
+                      alignment: message.isUser
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
                       child: Container(
                         padding: const EdgeInsets.all(8.0),
                         decoration: BoxDecoration(
                           color: message.isUser
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.secondary,
-                          borderRadius: BorderRadius.circular(8.0),
+                              ? Colors.blue.shade200
+                              : Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(18.0),
                         ),
                         child: message.isUser
-                            ? Text(
-                                message.text,
-                                style: TextStyle(
-                                  color: message.isUser
-                                      ? Theme.of(context).colorScheme.onPrimary
-                                      : Theme.of(context).colorScheme.onSecondary,
-                                ),
-                              )
-                            : GptMarkdown(
-                                 message.text,
-                              ),
+                            ? Text(message.text)
+                            : GptMarkdown(message.text),
                       ),
                     ),
                   );
@@ -165,12 +165,12 @@ class ChatScreen extends StatelessWidget {
                   onPressed: chatProvider.isLoading
                       ? null
                       : () {
-                  final text = textController.text;
-                  if (text.isNotEmpty) {
-                    chatProvider.sendMessage(text);
-                    textController.clear();
-                  }
-                },
+                          final text = textController.text;
+                          if (text.isNotEmpty) {
+                            chatProvider.sendMessage(text);
+                            textController.clear();
+                          }
+                        },
                 ),
               ],
             ),
