@@ -6,6 +6,7 @@ from app.models import ChatRequest, ChatResponse
 from app.agent import agent, AgentDeps
 from app.database import KnowledgeBase
 from app.history import db_logger  # Import the Postgres logger
+from uuid import uuid4
 
 # 1. Initialize Vector DB (Qdrant)
 try:
@@ -61,7 +62,8 @@ async def chat_endpoint(request: ChatRequest):
 
         # 3. Save to PostgreSQL (Background Task-like)
         # We await it here to ensure data integrity, but you could use BackgroundTasks for speed
-        await db_logger.save_chat(request.query, bot_reply)
+        session_id = request.session_id or str(uuid4())
+        await db_logger.save_chat(session_id, request.query, bot_reply)
         
         return ChatResponse(
             response=bot_reply

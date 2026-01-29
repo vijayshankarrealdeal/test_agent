@@ -17,7 +17,7 @@ async def chat_endpoint(request: ChatRequest):
         # Run the agent
         result = await agent.run(request.query, deps=deps)
         
-        return ChatResponse(response=result.data)
+        return ChatResponse(response=result.output)
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -25,11 +25,15 @@ class ChatLogger:
                 await conn.execute("""
                     CREATE TABLE IF NOT EXISTS chat_history (
                         id SERIAL PRIMARY KEY,
+                        session_id TEXT,
                         user_query TEXT,
                         bot_response TEXT,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     );
                 """)
+                await conn.execute(
+                    "ALTER TABLE chat_history ADD COLUMN IF NOT EXISTS session_id TEXT;"
+                )
             print("PostgreSQL: Connected and Table Verified.")
         except Exception as e:
             print(f"PostgreSQL Error: {e}")
@@ -39,7 +43,7 @@ class ChatLogger:
         if self.pool:
             await self.pool.close()
 
-    async def save_chat(self, query: str, response: str):
+    async def save_chat(self, session_id: str, query: str, response: str):
         """Insert a chat log into the database."""
         if not self.pool:
             print("Warning: PostgreSQL not connected. Chat not saved.")
@@ -48,8 +52,8 @@ class ChatLogger:
         try:
             async with self.pool.acquire() as conn:
                 await conn.execute(
-                    "INSERT INTO chat_history (user_query, bot_response) VALUES ($1, $2)",
-                    query, response
+                    "INSERT INTO chat_history (session_id, user_query, bot_response) VALUES ($1, $2, $3)",
+                    session_id, query, response
                 )
         except Exception as e:
             print(f"Failed to save chat history: {e}")
