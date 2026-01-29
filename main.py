@@ -58,7 +58,7 @@ async def chat_endpoint(request: ChatRequest):
         result = await agent.run(request.query, deps=deps)
         
         # 2. Extract Response
-        bot_reply = result.data
+        bot_reply = result.output
 
         # 3. Save to PostgreSQL (Background Task-like)
         # We await it here to ensure data integrity, but you could use BackgroundTasks for speed
