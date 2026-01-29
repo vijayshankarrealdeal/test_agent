@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from pydantic_ai import Agent, RunContext
-from pydantic_ai.models.gemini import GeminiModel
-from app.database import ChromaKnowledgeBase
+from pydantic_ai.models.google import GoogleModel
+from pydantic_ai.providers.google import GoogleProvider
+from app.database import KnowledgeBase
 from app.config import get_settings
 
 settings = get_settings()
@@ -9,13 +10,11 @@ settings = get_settings()
 # Define dependencies injected per request
 @dataclass
 class AgentDeps:
-    db: ChromaKnowledgeBase
+    db: KnowledgeBase
 
-# Initialize Gemini Model
-model = GeminiModel(
-    'gemini-1.5-flash', 
-    api_key=settings.gemini_api_key
-)
+provider = GoogleProvider(api_key=settings.gemini_api_key)
+model = GoogleModel('gemini-2.5-flash-lite', provider=provider)
+
 
 # Initialize Agent
 agent = Agent(
@@ -34,4 +33,5 @@ def retrieve_knowledge(ctx: RunContext[AgentDeps], query: str) -> str:
     """
     Search the knowledge base for information about Anantya.ai, features, or pricing.
     """
+    print(f"--- Agent Tool: Searching for '{query}' ---")
     return ctx.deps.db.search(query)

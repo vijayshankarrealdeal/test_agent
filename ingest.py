@@ -1,17 +1,18 @@
 import json
 import os
-from app.database import ChromaKnowledgeBase
+import uuid
+from app.database import KnowledgeBase
 
 # Ensure data directory exists
-DATA_FILE = "data/source_data.jsonl"
+DATA_FILE = "data/anantya_embeddings_data.jsonl"
 
 def load_data():
     if not os.path.exists(DATA_FILE):
         print(f"Error: {DATA_FILE} not found. Please create it.")
         return
 
-    print("Initializing Database...")
-    db = ChromaKnowledgeBase()
+    print("Initializing Database (Qdrant)...")
+    db = KnowledgeBase()
     
     docs = []
     metadatas = []
@@ -23,15 +24,19 @@ def load_data():
             try:
                 item = json.loads(line)
                 
-                # Extract fields based on your JSONL structure
                 doc_id = item.get("id")
+                # Qdrant prefers UUIDs. If your ID is a string, let's hash it or use a valid UUID.
+                # If your JSON has valid UUID strings, this is fine. 
+                # If not, we generate one to be safe.
+                if not doc_id:
+                    doc_id = str(uuid.uuid4())
+                
                 text = item.get("text")
                 meta = item.get("metadata", {})
                 
-                if doc_id and text:
+                if text:
                     ids.append(doc_id)
                     docs.append(text)
-                    # Chroma requires metadata values to be str, int, float, or bool
                     metadatas.append(meta)
             except json.JSONDecodeError:
                 print("Skipping invalid JSON line")
@@ -44,9 +49,6 @@ def load_data():
         print("No valid data found to ingest.")
 
 if __name__ == "__main__":
-    # Create dummy data if file doesn't exist for testing
     if not os.path.exists("data"):
         os.makedirs("data")
-        
-    # Run ingestion
     load_data()
